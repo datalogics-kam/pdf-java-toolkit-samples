@@ -49,7 +49,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,8 +70,9 @@ import javax.print.PrintServiceLookup;
                                     + "and methods with no discernable call site")
 @RunWith(Parameterized.class)
 public class RunMainWithArgsIntegrationTest {
-    Class<?> sampleClass;
-    String[] argList;
+    private final Class<?> sampleClass;
+    private final String[] argList;
+    private final Method mainMethod;
     static final String REQUIRED_DIR = "integration-test-outputs";
     static final String SEP = File.separator;
     static final String OUTPUT_DIR = RunMainWithArgsIntegrationTest.class.getSimpleName() + SEP;
@@ -121,18 +121,31 @@ public class RunMainWithArgsIntegrationTest {
     @Parameters(name = "mainClass={0}")
     public static Iterable<Object[]> parameters() throws Exception {
         final Set<String> sampleClasses = getAllClassNamesInPackage();
-        final Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
+        final ArrayList<Object[]> mainArgs = new ArrayList<Object[]>();
+
+        final Map<String, String[]> argsMap = new HashMap<String, String[]>() {
+            private static final long serialVersionUID = 1L;
+
+            {
+                put("HelloWorld", new String[] { OUTPUT_DIR + HelloWorld.OUTPUT_PDF_PATH });
+            }
+        };
+
         for (final String className : sampleClasses) {
             final Class<?> c = Class.forName(className);
-            classMap.put(c.getSimpleName(), c);
+
+            @SuppressWarnings("unchecked")
+            final Set<Method> mains = getMethods(c, withModifier(Modifier.PUBLIC), withModifier(Modifier.STATIC),
+                                                 withName("main"), withParameters(String[].class));
+            for (final Method mainMethod : mains) {
+                final String simpleName = c.getSimpleName();
+                mainArgs.add(new Object[] { simpleName, c, mainMethod, argsMap.get(simpleName) });
+            }
         }
 
         final String resourceDir = System.getProperty("user.dir") + SEP + "inputs" + SEP;
 
-        final ArrayList<Object[]> mainArgs = new ArrayList<Object[]>();
 
-        mainArgs.add(new Object[] { "HelloWorld", classMap.get("HelloWorld"),
-            new String[] { OUTPUT_DIR + HelloWorld.OUTPUT_PDF_PATH } });
 
         mainArgs.add(new Object[] { "MakePdfFromImage", classMap.get("MakePdfFromImage"),
             new String[] { OUTPUT_DIR + MakePdfFromImage.OUTPUT_PDF,
@@ -200,10 +213,12 @@ public class RunMainWithArgsIntegrationTest {
      * @param className the name of the class, for documentary purposes
      * @throws Exception a general exception was thrown
      */
-    public RunMainWithArgsIntegrationTest(final String className, final Class<?> sampleClass, final String[] argList)
+    public RunMainWithArgsIntegrationTest(final String className, final Method mainMethod, final Class<?> sampleClass,
+                                          final String[] argList)
                     throws Exception {
         this.sampleClass = sampleClass;
-        this.argList = argList;
+        this.argList = argList.clone();
+        this.mainMethod = mainMethod;
     }
 
     /**
@@ -233,17 +248,6 @@ public class RunMainWithArgsIntegrationTest {
         // Invoke the main method of that class
         try {
             // Get all the public, static methods in the class that are named "main" and take a String array
-            @SuppressWarnings("unchecked")
-            final Set<Method> mains = getMethods(sampleClass, withModifier(Modifier.PUBLIC),
-                                                 withModifier(Modifier.STATIC),
-                                                 withName("main"), withParameters(String[].class));
-            final Iterator<Method> mainIter = mains.iterator();
-            final Method mainMethod;
-            if (mainIter.hasNext()) {
-                mainMethod = mains.iterator().next();
-            } else {
-                throw new Exception("Main method not found in class " + sampleClass.getName());
-            }
             mainMethod.invoke(null, new Object[] { argList });
         } catch (final InvocationTargetException e) {
             final Throwable cause = e.getCause();
