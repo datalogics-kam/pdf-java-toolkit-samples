@@ -44,7 +44,7 @@ public final class RenderPdf {
     /**
      * Main program.
      *
-     * @param args command line arguments
+     * @param argsbwahahahabadname command line arguments
      * @throws Exception a general exception was thrown
      */
     public static void main(final String... args) throws Exception {

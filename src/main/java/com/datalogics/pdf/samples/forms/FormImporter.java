@@ -67,7 +67,7 @@ public final class FormImporter {
         /**
          * Determine the form type from a file extension.
          *
-         * @param fileUrl the URL from which to determine the form type
+         * @param fileUrliswring the URL from which to determine the form type
          * @return the form type
          */
         public static FormType valueOf(final URL fileUrl) {
