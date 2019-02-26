@@ -16,6 +16,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import mockit.Mock;
 import mockit.MockUp;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -53,25 +55,48 @@ public class PrintPdfTest extends SampleTest {
     @Rule
     public final ExpectedException expected = ExpectedException.none();
 
+    private static PrinterJob fakePrinterJob;
+
+    private static PrintService fakePrintService;
+
+    /**
+     * Set up mocks to for creating a {@link PrintService} or {@link PrinterJob} for testing without a printer.
+     *
+     * @param <T> a generic PrinterJob
+     */
+    @BeforeClass
+    public static <T extends PrinterJob> void beforeClass() {
+        // Mock the PrintServiceLookup.lookupDefaultPrintService() method to return a TestPrintService object
+        new MockUp<PrintServiceLookup>() {
+            @Mock
+            PrintService lookupDefaultPrintService() {
+                return fakePrintService;
+            }
+        };
+
+        // Mock the PrinterJob.getPrinterJob() method to return a TestPrinterJob object
+        new MockUp<T>() {
+            @Mock
+            public PrinterJob getPrinterJob() {
+                return fakePrinterJob;
+            }
+        };
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        fakePrintService = null;
+        fakePrinterJob = null;
+    }
+
     @Test
+    @SuppressFBWarnings(value = { "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" },
+                        justification = "Required in order to mock static methods only once in JMockit")
     public <T extends PrinterJob> void testPrintPdf() throws Exception {
         assumeThat("This test requires a Java 7 JRE for the checksums to work",
                    System.getProperty("java.runtime.version"), startsWith("1.7."));
-        // Mock the PrintServiceLookup.lookupDefaultPrintService() method to return a TestPrintService object
-        new MockUp<PrintServiceLookup>() {
-            @Mock(invocations = 1)
-            PrintService lookupDefaultPrintService() {
-                return new FakePrintService();
-            }
-        };
-
-        // Mock the PrinterJob.getPrinterJob() method to return a TestPrinterJob object
-        new MockUp<T>() {
-            @Mock(invocations = 1)
-            public PrinterJob getPrinterJob() {
-                return new TestPrinterJob();
-            }
-        };
+        fakePrintService = new FakePrintService();
+        fakePrinterJob = new TestPrinterJob();
 
         // Call the printPdf method
         final URL inputUrl = PrintPdf.class.getResource(DEFAULT_INPUT);
@@ -79,24 +104,14 @@ public class PrintPdfTest extends SampleTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = { "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" },
+                        justification = "Required in order to mock static methods only once in JMockit")
     public <T extends PrinterJob> void testPrintPdfWithMultiPagePrinterJob() throws Exception {
         assumeThat("This test requires a Java 7 JRE for the checksums to work",
                    System.getProperty("java.runtime.version"), startsWith("1.7."));
-        // Mock the PrintServiceLookup.lookupDefaultPrintService() method to return a TestPrintService object
-        new MockUp<PrintServiceLookup>() {
-            @Mock(invocations = 1)
-            PrintService lookupDefaultPrintService() {
-                return new FakePrintService();
-            }
-        };
 
-        // Mock the PrinterJob.getPrinterJob() method to return a TestPrinterJob object
-        new MockUp<T>() {
-            @Mock(invocations = 1)
-            public PrinterJob getPrinterJob() {
-                return new TestMultiPagePrinterJob();
-            }
-        };
+        fakePrintService = new FakePrintService();
+        fakePrinterJob = new TestMultiPagePrinterJob();
 
         // Call the printPdf method
         final URL inputUrl = PrintPdf.class.getResource(DEFAULT_INPUT);
@@ -104,14 +119,10 @@ public class PrintPdfTest extends SampleTest {
     }
 
     @Test
+    @SuppressFBWarnings(value = { "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" },
+                        justification = "Required in order to mock static methods only once in JMockit")
     public void testPrintPdfNoPrinter() throws Exception {
-        // Mock the PrinterServiceLookup.lookupDefaultPrintService() method to return nothing (no printer available)
-        new MockUp<PrintServiceLookup>() {
-            @Mock(invocations = 1)
-            PrintService lookupDefaultPrintService() {
-                return null;
-            }
-        };
+        fakePrintService = null;
 
         // Call the printPdf method
         expected.expect(PrinterException.class);
