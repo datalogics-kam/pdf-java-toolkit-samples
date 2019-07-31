@@ -27,8 +27,6 @@ import com.adobe.pdfjt.pdf.interactive.forms.PDFField;
 import com.adobe.pdfjt.pdf.interactive.navigation.PDFBookmark;
 import com.adobe.pdfjt.pdf.interchange.prepress.PDFOutputIntent;
 import com.adobe.pdfjt.pdf.page.PDFPage;
-import com.adobe.pdfjt.services.pdfa2.EmbeddedFilePDFA1ValidationHandler;
-import com.adobe.pdfjt.services.pdfa2.EmbeddedFilePDFA2ValidationHandler;
 import com.adobe.pdfjt.services.pdfa2.PDFA2InvalidNamespaceUsage;
 import com.adobe.pdfjt.services.pdfa2.PDFA2SaveTypes;
 import com.adobe.pdfjt.services.pdfa2.PDFA2ValidationHandler;
@@ -45,10 +43,11 @@ import java.util.Set;
 
 
 /**
- * This is sample implementation of {@link PDFA2ValidationHandler}
- *
+ * This is sample implementation of {@link PDFA2ValidationHandler}.
  */
-class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
+class SamplePdfA2ValidationHandler implements PDFA2ValidationHandler {
+    static final boolean ACROBAT_COMPLIANT_MSG = true;
+
     private PDFA2SaveTypes saveTypes;
 
     private int pageIndex = -1;
@@ -64,17 +63,18 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
 
     private void printError(PDFA2AbstractErrorCode error, String uri) {
 
-        if (!errorsFound)
+        if (!errorsFound) {
             System.out.println("PDF document is not compliant with PDF/A-2b");
+        }
         errorsFound = true;
 
         if (uri != null) {
             System.out.println("\n\n---> Error corresponding to URI: " + uri);
-            if (PDFA2DocumentValidation.ACROBAT_COMPLIANT_MSG)
+            if (ACROBAT_COMPLIANT_MSG)
                 System.out.println("\n\t-> " + error.getAcrobatComplaintMessage());
             else
                 System.out.println("\n\t-> " + error.toString());
-        } else if (PDFA2DocumentValidation.ACROBAT_COMPLIANT_MSG)
+        } else if (ACROBAT_COMPLIANT_MSG)
             System.out.println("\n\n-> " + error.getAcrobatComplaintMessage());
         else
             System.out.println("\n\n-> " + error.toString());
@@ -87,6 +87,7 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
     }
 
 
+    @Override
     public boolean annotationError(PDFA2ErrorSet<PDFA2AbstractAnnotationErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractAnnotationErrorCode> itr = errors.getErrorCodes().iterator();
@@ -113,67 +114,83 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
         return true;
     }
 
+    @Override
     public boolean beginAnnotationScan(PDFAnnotation annot) {
         return true;
     }
 
+    @Override
     public boolean beginAnnotationsScan() {
         return true;
     }
 
+    @Override
     public boolean beginColorSpaceScan(ASName name, PDFColorSpace colorSpace) {
         return true;
     }
 
+    @Override
     public boolean beginContentScan(PDFContents contents, PDFResources resources) {
         return true;
     }
 
+    @Override
     public boolean beginDocMetadataScan() {
         return true;
     }
 
+    @Override
     public boolean beginDocumentScan() {
         return true;
     }
 
+    @Override
     public boolean beginFontScan(ASName name, PDFFont font) {
         return true;
     }
 
+    @Override
     public boolean beginFileStructureScan() {
         return true;
     }
 
+    @Override
     public boolean beginFormFieldScan(PDFField field) {
         return true;
     }
 
+    @Override
     public boolean beginFormFieldTreeScan() {
         return true;
     }
 
+    @Override
     public boolean beginOutputIntentScan() {
         return true;
     }
 
+    @Override
     public boolean beginPageScan(PDFPage page, int index) {
         this.pageIndex = index;
         return true;
     }
 
+    @Override
     public boolean beginPageTreeScan() {
         return true;
     }
 
+    @Override
     public boolean beginPatternScan(ASName name, PDFPattern pattern) {
         return true;
     }
 
-    public boolean beginXObjectScan(ASName name, PDFXObject xObject) {
+    @Override
+    public boolean beginXObjectScan(ASName name, PDFXObject xobject) {
         return true;
     }
 
+    @Override
     public boolean bookmarkError(PDFBookmark bookmark, PDFA2ErrorSet<PDFA2AbstractBookmarkErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractBookmarkErrorCode> itr = errors.getErrorCodes().iterator();
@@ -190,6 +207,7 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
         return true;
     }
 
+    @Override
     public boolean catalogError(PDFA2ErrorSet<PDFA2AbstractCatalogErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractCatalogErrorCode> itr = errors.getErrorCodes().iterator();
@@ -202,16 +220,19 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2CatalogErrorNonPermittedNamedActionFound) error).getName());
                 } else if (error instanceof PDFA2CatalogErrorNamedEmbeddedFilesAreNotValidPDFAFile) {
                     System.out.println("Embedded file name: "
-                                       + ((PDFA2CatalogErrorNamedEmbeddedFilesAreNotValidPDFAFile) error).getFileName());
+                                       + ((PDFA2CatalogErrorNamedEmbeddedFilesAreNotValidPDFAFile) error)
+                                                                                                         .getFileName());
                 } else if (error instanceof PDFA2CatalogErrorStructureTypeNameNotValidUTF8) {
                     System.out.println("Structure Type Name: "
-                                       + ((PDFA2CatalogErrorStructureTypeNameNotValidUTF8) error).getStructureTypeName());
+                                       + ((PDFA2CatalogErrorStructureTypeNameNotValidUTF8) error)
+                                                                                                 .getStructureTypeName());
                 }
             }
         }
         return true;
     }
 
+    @Override
     public boolean colorSpaceError(PDFA2ErrorSet<PDFA2AbstractColorSpaceErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractColorSpaceErrorCode> itr = errors.getErrorCodes().iterator();
@@ -221,7 +242,8 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                 printError(error, null);
                 if (error instanceof PDFA2ColorSpaceErrorDeviceNHasMoreThan32Colourants) {
                     System.out.println("Number of colorants: "
-                                       + ((PDFA2ColorSpaceErrorDeviceNHasMoreThan32Colourants) error).getNumberOfColorants());
+                                       + ((PDFA2ColorSpaceErrorDeviceNHasMoreThan32Colourants) error)
+                                                                                                     .getNumberOfColorants());
                 } else if (error instanceof PDFA2ColorSpaceErrorICCProfileVersion5OrNewer) {
                     System.out.println("Profile version: "
                                        + ((PDFA2ColorSpaceErrorICCProfileVersion5OrNewer) error).getProfileVersion());
@@ -233,16 +255,19 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2ColorSpaceErrorColorantNameNotValidUTF8) error).getColorantName());
                 } else if (error instanceof PDFA2ColorSpaceErrorNotDeviceIndependent) {
                     System.out.println("Color Space: "
-                                       + ((PDFA2ColorSpaceErrorNotDeviceIndependent) error).getBaseColorSpaceName());
+                                       + ((PDFA2ColorSpaceErrorNotDeviceIndependent) error)
+                                                                                           .getBaseColorSpaceName());
                 } else if (error instanceof PDFA2ColorSpaceErrorAlternateCSNotDeviceIndependent) {
                     System.out.println("Color Space: "
-                                       + ((PDFA2ColorSpaceErrorAlternateCSNotDeviceIndependent) error).getBaseColorSpaceName());
+                                       + ((PDFA2ColorSpaceErrorAlternateCSNotDeviceIndependent) error)
+                                                                                                      .getBaseColorSpaceName());
                 }
             }
         }
         return true;
     }
 
+    @Override
     public boolean contentError(ASName operatorName, PDFA2ErrorSet<PDFA2AbstractContentStreamErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractContentStreamErrorCode> itr = errors.getErrorCodes().iterator();
@@ -275,7 +300,8 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2ContentStreamErrorStringLengthIncorrect) error).getString());
                 } else if (error instanceof PDFA2ContentStreamErrorMoreThan28NestingLevelsUsed) {
                     System.out.println("Nested Levels: "
-                                       + ((PDFA2ContentStreamErrorMoreThan28NestingLevelsUsed) error).getNestedLevels());
+                                       + ((PDFA2ContentStreamErrorMoreThan28NestingLevelsUsed) error)
+                                                                                                     .getNestedLevels());
                 } else if (error instanceof PDFA2ContentStreamErrorUnknownOperator) {
                     System.out.println("Unknown operator: "
                                        + ((PDFA2ContentStreamErrorUnknownOperator) error).getOperator());
@@ -284,16 +310,19 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2ContentStreamErrorInvalidRenderingIntent) error).getRenderingIntent());
                 } else if (error instanceof PDFA2ContentStreamErrorUsesDeviceDependentColorSpace) {
                     System.out.println("Color Space: "
-                                       + ((PDFA2ContentStreamErrorUsesDeviceDependentColorSpace) error).getBaseColorSpaceName());
+                                       + ((PDFA2ContentStreamErrorUsesDeviceDependentColorSpace) error)
+                                                                                                       .getBaseColorSpaceName());
                 } else if (error instanceof PDFA2ContentStreamErrorInlineImageUsesNonStandardFilter) {
                     System.out.println("Filter Name: "
-                                       + ((PDFA2ContentStreamErrorInlineImageUsesNonStandardFilter) error).getFilterName());
+                                       + ((PDFA2ContentStreamErrorInlineImageUsesNonStandardFilter) error)
+                                                                                                          .getFilterName());
                 }
             }
         }
         return true;
     }
 
+    @Override
     public boolean docMetadataError(PDFA2ErrorSet<PDFA2AbstractDocumentMetadataErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractDocumentMetadataErrorCode> itr = errors.getErrorCodes().iterator();
@@ -306,75 +335,92 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2DocumentMetadataErrorPDFAVersionScanMismatch) error).getVersion());
                 } else if (error instanceof PDFA2DocumentMetadataErrorPDFAConformanceScanMismatch) {
                     System.out.println("Conformance level: "
-                                       + ((PDFA2DocumentMetadataErrorPDFAConformanceScanMismatch) error).getComformanceLevel());
+                                       + ((PDFA2DocumentMetadataErrorPDFAConformanceScanMismatch) error)
+                                                                                                        .getComformanceLevel());
                 }
             }
         }
         return true;
     }
 
+    @Override
     public boolean endAnnotationScan() {
         return true;
     }
 
+    @Override
     public boolean endAnnotationsScan() {
         return true;
     }
 
+    @Override
     public boolean endColorSpaceScan() {
         return true;
     }
 
+    @Override
     public boolean endContentScan() {
         return true;
     }
 
+    @Override
     public boolean endDocMetadataScan() {
         return true;
     }
 
+    @Override
     public boolean endDocumentScan(boolean errorsFound) {
         return true;
     }
 
+    @Override
     public boolean endFontScan() {
         return true;
     }
 
+    @Override
     public boolean endFileStructureScan(PDFA2SaveTypes saveTypes) {
         this.saveTypes = saveTypes;
         return true;
     }
 
+    @Override
     public boolean endFormFieldScan() {
         return true;
     }
 
+    @Override
     public boolean endFormFieldTreeScan() {
         return true;
     }
 
+    @Override
     public boolean endOutputIntentScan() {
         return true;
     }
 
+    @Override
     public boolean endPageScan() {
         pageIndex = -1;
         return true;
     }
 
+    @Override
     public boolean endPageTreeScan() {
         return true;
     }
 
+    @Override
     public boolean endPatternScan() {
         return true;
     }
 
+    @Override
     public boolean endXObjectScan() {
         return true;
     }
 
+    @Override
     public boolean extGStateError(PDFExtGState extGState, PDFA2ErrorSet<PDFA2AbstractExtGStateErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractExtGStateErrorCode> itr = errors.getErrorCodes().iterator();
@@ -399,6 +445,7 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
         return true;
     }
 
+    @Override
     public boolean fileStructureError(PDFA2ErrorSet<PDFA2AbstractFileStructureErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractFileStructureErrorCode> itr = errors.getErrorCodes().iterator();
@@ -414,9 +461,11 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2FileStructureErrorHexStrEvenNumCharsNotPresent) error).getHexString());
                 } else if (error instanceof PDFA2FileStructureErrorStreamDLKeyInvalid) {
                     System.out.println("Actual Decoded Bytes: "
-                                       + ((PDFA2FileStructureErrorStreamDLKeyInvalid) error).getActualDecodedStreamBytes());
+                                       + ((PDFA2FileStructureErrorStreamDLKeyInvalid) error)
+                                                                                            .getActualDecodedStreamBytes());
                     System.out.println("DL key value: "
-                                       + ((PDFA2FileStructureErrorStreamDLKeyInvalid) error).getStreamDLValuePresentinDict());
+                                       + ((PDFA2FileStructureErrorStreamDLKeyInvalid) error)
+                                                                                            .getStreamDLValuePresentinDict());
                 } else if (error instanceof PDFA2FileStructureErrorIntegerNumberValueTooHigh) {
                     System.out.println("Integer Value: "
                                        + ((PDFA2FileStructureErrorIntegerNumberValueTooHigh) error).getNumber());
@@ -442,19 +491,23 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2FileStructureErrorStringLengthIncorrect) error).getString());
                 } else if (error instanceof PDFA2FileStructureErrorCryptDecodeFilterPresentWithoutIdentity) {
                     System.out.println("Crypt filter name: "
-                                       + ((PDFA2FileStructureErrorCryptDecodeFilterPresentWithoutIdentity) error).getName());
+                                       + ((PDFA2FileStructureErrorCryptDecodeFilterPresentWithoutIdentity) error)
+                                                                                                                 .getName());
                 } else if (error instanceof PDFA2FileStructureErrorNonStandardFilterUsed) {
                     System.out.println("Filter name: "
-                                       + ((PDFA2FileStructureErrorNonStandardFilterUsed) error).getFilterName());
+                                       + ((PDFA2FileStructureErrorNonStandardFilterUsed) error)
+                                                                                               .getFilterName());
                 } else if (error instanceof PDFA2FileStructureErrorIndirectObjectNumberIncorrect) {
                     System.out.println("Number of Indirect Objects in document: "
-                                       + ((PDFA2FileStructureErrorIndirectObjectNumberIncorrect) error).getNumberOfIndirectObjects());
+                                       + ((PDFA2FileStructureErrorIndirectObjectNumberIncorrect) error)
+                                                                                                       .getNumberOfIndirectObjects());
                 }
             }
         }
         return true;
     }
 
+    @Override
     public boolean fontError(PDFA2ErrorSet<PDFA2AbstractFontErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractFontErrorCode> itr = errors.getErrorCodes().iterator();
@@ -479,6 +532,7 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
         return true;
     }
 
+    @Override
     public boolean formFieldError(PDFA2ErrorSet<PDFA2AbstractFieldErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractFieldErrorCode> itr = errors.getErrorCodes().iterator();
@@ -491,6 +545,7 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
         return true;
     }
 
+    @Override
     public boolean outputIntentsError(PDFOutputIntent intent,
                                       PDFA2ErrorSet<PDFA2AbstractOutputIntentErrorCode> errors) {
         if (errors != null) {
@@ -501,19 +556,23 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                 printError(error, null);
                 if (error instanceof PDFA2OutputIntentErrorMultipleDestOutputProfiles) {
                     System.out.println("Profiles used: "
-                                       + ((PDFA2OutputIntentErrorMultipleDestOutputProfiles) error).getNumberOfoutputIntentEntries());
+                                       + ((PDFA2OutputIntentErrorMultipleDestOutputProfiles) error)
+                                                                                                   .getNumberOfoutputIntentEntries());
                 } else if (error instanceof PDFA2OutputIntentErrorICCProfileVersion5OrNewer) {
                     System.out.println("Profile version: "
-                                       + ((PDFA2OutputIntentErrorICCProfileVersion5OrNewer) error).getProfileVersion());
+                                       + ((PDFA2OutputIntentErrorICCProfileVersion5OrNewer) error)
+                                                                                                  .getProfileVersion());
                 } else if (error instanceof PDFA2OutputIntentErrorICCProfileVersionOlderThan2) {
                     System.out.println("Profile version: "
-                                       + ((PDFA2OutputIntentErrorICCProfileVersionOlderThan2) error).getProfileVersion());
+                                       + ((PDFA2OutputIntentErrorICCProfileVersionOlderThan2) error)
+                                                                                                    .getProfileVersion());
                 }
             }
         }
         return true;
     }
 
+    @Override
     public boolean pageError(PDFA2ErrorSet<PDFA2AbstractPageErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractPageErrorCode> itr = errors.getErrorCodes().iterator();
@@ -587,6 +646,7 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
         return true;
     }
 
+    @Override
     public boolean patternError(PDFA2ErrorSet<PDFA2AbstractPatternErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractPatternErrorCode> itr = errors.getErrorCodes().iterator();
@@ -599,6 +659,7 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
         return true;
     }
 
+    @Override
     public boolean xObjectError(PDFA2ErrorSet<PDFA2AbstractXObjectErrorCode> errors) {
         if (errors != null) {
             Iterator<PDFA2AbstractXObjectErrorCode> itr = errors.getErrorCodes().iterator();
@@ -614,7 +675,8 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2XObjectErrorDeviceDependentColorUsed) error).getColorSpaceType());
                 } else if (error instanceof PDFA2XObjectErrorJpeg2000HasInvalidNumberOfColourChannels) {
                     System.out.println("Color channels: "
-                                       + ((PDFA2XObjectErrorJpeg2000HasInvalidNumberOfColourChannels) error).getNumberOfColorChannels());
+                                       + ((PDFA2XObjectErrorJpeg2000HasInvalidNumberOfColourChannels) error)
+                                                                                                            .getNumberOfColorChannels());
                 } else if (error instanceof PDFA2XObjectErrorICCProfileVersion5OrNewer) {
                     System.out.println("Profile version: "
                                        + ((PDFA2XObjectErrorICCProfileVersion5OrNewer) error).getProfileVersion());
@@ -623,77 +685,82 @@ class SamplePDFA2ValidationHandler implements PDFA2ValidationHandler {
                                        + ((PDFA2XObjectErrorICCProfileVersionOlderThan2) error).getProfileVersion());
                 } else if (error instanceof PDFA2XObjectErrorJpeg2000HasInvalidColourSpecificationMethod) {
                     System.out.println("Method: "
-                                       + ((PDFA2XObjectErrorJpeg2000HasInvalidColourSpecificationMethod) error).getMethod());
+                                       + ((PDFA2XObjectErrorJpeg2000HasInvalidColourSpecificationMethod) error)
+                                                                                                               .getMethod());
                 } else if (error instanceof PDFA2XObjectErrorJpeg2000UsesInvalidEnumeratedColourSpace) {
                     System.out.println("Color Space: "
-                                       + ((PDFA2XObjectErrorJpeg2000UsesInvalidEnumeratedColourSpace) error).getEnumeratedColorSpace());
+                                       + ((PDFA2XObjectErrorJpeg2000UsesInvalidEnumeratedColourSpace) error)
+                                                                                                            .getEnumeratedColorSpace());
                 } else if (error instanceof PDFA2XObjectErrorJpeg2000ImageUsesBitDepthBelow1) {
                     System.out.println("Bit depth: "
                                        + ((PDFA2XObjectErrorJpeg2000ImageUsesBitDepthBelow1) error).getBitDepthValue());
                 } else if (error instanceof PDFA2XObjectErrorJpeg2000ImageUsesBitDepthGreaterThan38) {
                     System.out.println("Bit depth: "
-                                       + ((PDFA2XObjectErrorJpeg2000ImageUsesBitDepthGreaterThan38) error).getBitDepthValue());
+                                       + ((PDFA2XObjectErrorJpeg2000ImageUsesBitDepthGreaterThan38) error)
+                                                                                                          .getBitDepthValue());
                 } else if (error instanceof PDFA2XObjectErrorJpeg2000UsesDeviceDependentColourSpace) {
                     System.out.println("Color Space: "
                                        + ((PDFA2XObjectErrorJpeg2000UsesDeviceDependentColourSpace) error).getBaseColorSpaceName());
                 } else if (error instanceof PDFA2XObjectErrorJpeg2000HasNumberofColorChannelsInconsistentWithCSFromImageDict) {
                     System.out.println("Color Space present in image dictionary: "
-                                       + ((PDFA2XObjectErrorJpeg2000HasNumberofColorChannelsInconsistentWithCSFromImageDict) error).getCsFromImageDict());
+                                       + ((PDFA2XObjectErrorJpeg2000HasNumberofColorChannelsInconsistentWithCSFromImageDict) error)
+                                                                                                                                   .getCsFromImageDict());
                     System.out.println("Color channels: "
-                                       + ((PDFA2XObjectErrorJpeg2000HasNumberofColorChannelsInconsistentWithCSFromImageDict) error).getNumberOfColorChannels());
+                                       + ((PDFA2XObjectErrorJpeg2000HasNumberofColorChannelsInconsistentWithCSFromImageDict) error)
+                                                                                                                                   .getNumberOfColorChannels());
                 }
             }
         }
         return true;
     }
 
+    @Override
     public boolean invalidNamespaceUsage(Collection<PDFA2InvalidNamespaceUsage> invalidUsage) {
         return true;
     }
 
+    @Override
     public boolean invalidTypeUsage(Map<XMLElement, PropertyOptions> invalidTypes) {
         return true;
     }
 
-    public EmbeddedFilePDFA1ValidationHandler getEmbeddedFilePDFA1ValidationHandler() {
-        return new EmbeddedFilePDFA1ValidationHandlerSample();
-    }
-
-    public EmbeddedFilePDFA2ValidationHandler getEmbeddedFilePDFA2ValidationHandler() {
-        return new EmbeddedFilePDFA2ValidationHandlerSample();
-    }
-
+    @Override
     public boolean fontXMPError(PDFA2XMPErrorCollector errors) {
-        printXMPError(errors);
+        printXmpError(errors);
         return true;
     }
 
+    @Override
     public boolean pageXMPError(PDFA2XMPErrorCollector errors) {
-        printXMPError(errors);
+        printXmpError(errors);
         return true;
     }
 
+    @Override
     public boolean docXMPError(PDFA2XMPErrorCollector errors) {
-        printXMPError(errors);
+        printXmpError(errors);
         return true;
     }
 
+    @Override
     public boolean type1FormXMPError(PDFA2XMPErrorCollector errors) {
-        printXMPError(errors);
+        printXmpError(errors);
         return true;
     }
 
+    @Override
     public boolean iccProfileXMPError(PDFA2XMPErrorCollector errors) {
-        printXMPError(errors);
+        printXmpError(errors);
         return true;
     }
 
+    @Override
     public boolean imageXMPError(PDFA2XMPErrorCollector errors) {
-        printXMPError(errors);
+        printXmpError(errors);
         return true;
     }
 
-    private void printXMPError(PDFA2XMPErrorCollector errors) {
+    private void printXmpError(PDFA2XMPErrorCollector errors) {
 
         if (errors != null) {
             Set<Entry<String, PDFA2ErrorSet<PDFA2AbstractXMPErrorCode>>> set = errors.getErrorMap().entrySet();
